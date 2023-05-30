@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import Pokemon, Users, Game
 
-# Register your models here.
+admin.site.register(Pokemon)
+admin.site.register(Users)
+admin.site.register(Game)
