@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Pokemon, Users, Game
 from .serializers import PokemonSerializer, UsersSerializer, GameSerializer
+from fuzzywuzzy import fuzz
 import json
 
 @csrf_exempt
@@ -14,8 +15,19 @@ def handle_speech_recognition(request):
 
             if transcript:
                 try:
-                    correct_pokemon = Pokemon.objects.get(name__iexact=transcript)
-                    return JsonResponse({"status": "success", "pokemon_name": correct_pokemon.name})
+                    correct_pokemon = None
+                    max_similarity = 0
+
+                    for pokemon in Pokemon.objects.all():
+                        similarity = fuzz.ratio(transcript.lower(), pokemon.name.lower())
+                        if similarity > max_similarity:
+                            max_similarity = similarity
+                            correct_pokemon = pokemon
+
+                    if max_similarity >= 70:
+                        return JsonResponse({"status": "success", "pokemon_name": correct_pokemon.name})
+    #                 correct_pokemon = Pokemon.objects.get(name__iexact=transcript)
+    #                 return JsonResponse({"status": "success", "pokemon_name": correct_pokemon.name})
                 except Pokemon.DoesNotExist:
                     all_pokemon_names = list(Pokemon.objects.values_list('name', flat=True))
                     return JsonResponse({"status": "error", "message": f"Invalid transcript: {transcript}", "all_pokemon_names": all_pokemon_names})
