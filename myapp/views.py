@@ -23,11 +23,10 @@ def handle_speech_recognition(request):
                         if similarity > max_similarity:
                             max_similarity = similarity
                             correct_pokemon = pokemon
+                            
 
-                    if max_similarity >= 70:
-                        return JsonResponse({"status": "success", "pokemon_name": correct_pokemon.name})
-    #                 correct_pokemon = Pokemon.objects.get(name__iexact=transcript)
-    #                 return JsonResponse({"status": "success", "pokemon_name": correct_pokemon.name})
+                    if max_similarity >= 50:
+                        return JsonResponse({"status": "success", "pokemon_name": correct_pokemon.name, "similarity": max_similarity, "pokemon_id": correct_pokemon.id})
                 except Pokemon.DoesNotExist:
                     all_pokemon_names = list(Pokemon.objects.values_list('name', flat=True))
                     return JsonResponse({"status": "error", "message": f"Invalid transcript: {transcript}", "all_pokemon_names": all_pokemon_names})
